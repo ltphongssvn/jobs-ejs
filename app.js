@@ -33,29 +33,32 @@ if (app.get("env") === "production") {
 app.set("view engine", "ejs");
 app.use(require("body-parser").urlencoded({ extended: true }));
 app.use(session(sessionParams));
+
+// Initialize Passport after session
+const passport = require("passport");
+const passportInit = require("./passport/passportInit");
+passportInit();
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Add connect-flash and storeLocals middleware
 app.use(require("connect-flash")());
+app.use(require("./middleware/storeLocals"));
 
-// secret word handling with sessions and flash messages
-app.get("/secretWord", (req, res) => {
-  if (!req.session.secretWord) {
-    req.session.secretWord = "syzygy";
-  }
-  res.locals.info = req.flash("info");
-  res.locals.errors = req.flash("error");
-  res.render("secretWord", { secretWord: req.session.secretWord });
+// Home page route
+app.get("/", (req, res) => {
+  res.render("index");
 });
 
-app.post("/secretWord", (req, res) => {
-  if (req.body.secretWord.toUpperCase()[0] == "P") {
-    req.flash("error", "That word won't work!");
-    req.flash("error", "You can't use words that start with p.");
-  } else {
-    req.session.secretWord = req.body.secretWord;
-    req.flash("info", "The secret word was changed.");
-  }
-  res.redirect("/secretWord");
-});
+// Mount session routes for authentication
+app.use("/sessions", require("./routes/sessionRoutes"));
 
+// Protected secretWord routes with authentication middleware
+const auth = require("./middleware/auth");
+const secretWordRouter = require("./routes/secretWord");
+app.use("/secretWord", auth, secretWordRouter);
+
+// Error handling middleware
 app.use((req, res) => {
   res.status(404).send(`That page (${req.url}) was not found.`);
 });
@@ -69,6 +72,8 @@ const port = process.env.PORT || 3000;
 
 const start = async () => {
   try {
+    // Connect to database before starting server
+    await require("./db/connect")(process.env.MONGO_URI);
     app.listen(port, () =>
       console.log(`Server is listening on port ${port}...`)
     );
