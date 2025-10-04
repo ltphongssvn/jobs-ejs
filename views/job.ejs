@@ -1,0 +1,165 @@
+<!-- File: jobs-ejs/views/job.ejs -->
+<%- include("partials/head.ejs") %>
+<%- include("partials/header.ejs") %>
+
+<div class="form-container">
+    <!-- Dynamic heading based on whether we're creating or editing -->
+    <h2><%= job ? 'Edit Job Application' : 'Add New Job Application' %></h2>
+
+    <!-- Display any error messages -->
+    <% if (errors && errors.length > 0) { %>
+        <div class="error-messages">
+            <% errors.forEach(error => { %>
+                <p class="error"><%= error %></p>
+            <% }) %>
+        </div>
+    <% } %>
+
+    <!--
+        The form action changes based on whether we're creating or editing
+        For new jobs: POST to /jobs
+        For editing: POST to /jobs/update/:id
+    -->
+    <form method="POST" action="<%= job ? '/jobs/update/' + job._id : '/jobs' %>">
+        <!-- CSRF token - absolutely required for the form to work -->
+        <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+
+        <div class="form-group">
+            <label for="company">Company Name: <span class="required">*</span></label>
+            <input
+                    type="text"
+                    id="company"
+                    name="company"
+                    value="<%= job ? job.company : '' %>"
+                    maxlength="50"
+                    required
+                    placeholder="e.g., Google, Microsoft, Amazon"
+            />
+        </div>
+
+        <div class="form-group">
+            <label for="position">Position: <span class="required">*</span></label>
+            <input
+                    type="text"
+                    id="position"
+                    name="position"
+                    value="<%= job ? job.position : '' %>"
+                    maxlength="100"
+                    required
+                    placeholder="e.g., Software Engineer, Product Manager"
+            />
+        </div>
+
+        <div class="form-group">
+            <label for="status">Application Status:</label>
+            <select id="status" name="status">
+                <option value="pending" <%= (!job || job.status === 'pending') ? 'selected' : '' %>>
+                    Pending - Waiting for response
+                </option>
+                <option value="interview" <%= (job && job.status === 'interview') ? 'selected' : '' %>>
+                    Interview - Invited to interview
+                </option>
+                <option value="declined" <%= (job && job.status === 'declined') ? 'selected' : '' %>>
+                    Declined - Application rejected
+                </option>
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <!-- Submit button text changes based on create vs edit -->
+            <button type="submit" class="btn-primary">
+                <%= job ? 'Update Job' : 'Add Job' %>
+            </button>
+            <a href="/jobs">
+                <button type="button" class="btn-secondary">Cancel</button>
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,.25);
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    .error-messages {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        padding: 10px 15px;
+        margin-bottom: 20px;
+    }
+
+    .error {
+        color: #721c24;
+        margin: 5px 0;
+    }
+
+    .form-actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+</style>
+
+<%- include("partials/footer.ejs") %>
