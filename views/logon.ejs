@@ -2,19 +2,24 @@
 <%- include("partials/head.ejs") %>
 <%- include("partials/header.ejs") %>
 <form method="POST">
-  <div>
-    <label name="email">Enter your email:</label>
-    <input name="email" />
-  </div>
-  <div>
-    <label name="password">Enter your password:</label>
-    <input type="password" name="password" />
-  </div>
-  <div>
-    <button>Logon</button>
-    <a href="/">
-      <button type="button">Cancel</button>
-    </a>
-  </div>
+    <!-- CSRF Token: This hidden field is crucial for security -->
+    <!-- The token value comes from res.locals._csrf which we set up in app.js -->
+    <!-- host-csrf middleware will verify this token matches the one in the cookie -->
+    <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+
+    <div>
+        <label name="email">Enter your email:</label>
+        <input name="email" />
+    </div>
+    <div>
+        <label name="password">Enter your password:</label>
+        <input type="password" name="password" />
+    </div>
+    <div>
+        <button>Logon</button>
+        <a href="/">
+            <button type="button">Cancel</button>
+        </a>
+    </div>
 </form>
 <%- include("partials/footer.ejs") %>

@@ -1,10 +1,77 @@
 <!-- File: jobs-ejs/views/index.ejs -->
 <%- include("partials/head.ejs") %>
 <%- include("partials/header.ejs") %>
+
 <% if (user) { %>
-    <a href="/secretWord">Click this link to view/change the secret word.</a>
+    <!-- Navigation for authenticated users -->
+    <div class="authenticated-nav">
+        <h3>Welcome, <%= user.name || user.email %>!</h3>
+        <div class="nav-links">
+            <p>
+                <a href="/jobs" class="nav-link">
+                    📋 Manage My Job Applications
+                </a>
+            </p>
+            <p>
+                <a href="/secretWord" class="nav-link">
+                    🔐 View/Change Secret Word
+                </a>
+            </p>
+        </div>
+    </div>
 <% } else { %>
-    <a href="/sessions/logon">Click this link to logon.</a>
-    <a href="/sessions/register">Click this link to register.</a>
+    <!-- Navigation for unauthenticated users -->
+    <div class="unauthenticated-nav">
+        <h3>Welcome to the Jobs EJS Application</h3>
+        <p>Please log in or register to track your job applications.</p>
+        <div class="nav-links">
+            <a href="/sessions/logon" class="nav-link">Click here to log on</a>
+            <br />
+            <a href="/sessions/register" class="nav-link">Click here to register</a>
+        </div>
+    </div>
 <% } %>
+
+<style>
+    .authenticated-nav, .unauthenticated-nav {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .nav-links {
+        margin-top: 20px;
+    }
+
+    .nav-link {
+        display: inline-block;
+        padding: 10px 15px;
+        margin: 5px 0;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #495057;
+        transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+        color: #212529;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h3 {
+        color: #343a40;
+        margin-bottom: 10px;
+    }
+
+    p {
+        color: #6c757d;
+        line-height: 1.6;
+    }
+</style>
+
 <%- include("partials/footer.ejs") %>
