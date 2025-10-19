@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test mocha tests/*.js --timeout 5000 --exit"
   },
   "repository": {
     "type": "git",
@@ -38,8 +38,14 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.1.0",
+    "chai": "^4.5.0",
+    "chai-http": "^4.4.0",
     "eslint": "^9.36.0",
+    "fishery": "^2.3.1",
+    "mocha": "^11.7.4",
     "nodemon": "^3.1.10",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "puppeteer": "^24.25.0"
   }
 }
