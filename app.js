@@ -18,6 +18,12 @@ require("dotenv").config();
 
 const app = express();
 
+// Determine MongoDB URI based on environment
+let mongoURL = process.env.MONGODB_URI;
+if (process.env.NODE_ENV == "test") {
+    mongoURL = process.env.MONGODB_URI_TEST;
+}
+
 // Security Configuration
 // Helmet helps secure Express apps by setting various HTTP headers
 app.use(helmet());
@@ -36,9 +42,9 @@ app.use("/sessions", limiter); // Apply rate limiting to authentication routes
 // View engine setup
 app.set("view engine", "ejs");
 
-// Session store configuration
+// Session store configuration - use mongoURL instead of hardcoded env variable
 const sessionStore = new MongoDBStore({
-    uri: process.env.MONGODB_URI,
+    uri: mongoURL,
     collection: "sessions"
 });
 
@@ -74,7 +80,19 @@ let csrf_protection_middleware = csrf.csrf({
 });
 app.use(csrf_protection_middleware);
 
-// 5. CSRF Token Generation Middleware
+// 5. Content-Type middleware for testing compatibility
+// Express doesn't set Content-Type for rendered HTML, causing issues with Chai
+// This middleware ensures proper Content-Type headers for testing
+app.use((req, res, next) => {
+    if (req.path == "/multiply") {
+        res.set("Content-Type", "application/json");
+    } else {
+        res.set("Content-Type", "text/html");
+    }
+    next();
+});
+
+// 6. CSRF Token Generation Middleware
 // The host-csrf package requires explicit token refresh for each request
 // This middleware ensures a CSRF token is available for all views
 app.use((req, res, next) => {
@@ -85,14 +103,14 @@ app.use((req, res, next) => {
     next();
 });
 
-// 6. Passport Authentication
+// 7. Passport Authentication
 const passport = require("passport");
 const passportInit = require("./passport/passportInit");
 passportInit();
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 7. Flash messages and local variables
+// 8. Flash messages and local variables
 app.use(require("connect-flash")());
 app.use(require("./middleware/storeLocals"));
 
@@ -101,6 +119,17 @@ app.use(require("./middleware/storeLocals"));
 app.get("/", (req, res) => {
     // Token is already available from our middleware
     res.render("index");
+});
+
+// Test API endpoint for multiply function
+app.get("/multiply", (req, res) => {
+    const result = req.query.first * req.query.second;
+    if (result.isNaN) {
+        result = "NaN";
+    } else if (result == null) {
+        result = "null";
+    }
+    res.json({ result: result });
 });
 
 // Mount session routes (login, logout, register)
@@ -172,13 +201,14 @@ app.use((err, req, res, next) => {
     res.status(err.status || 500).send(message);
 });
 
-// Server startup
+// Server startup - modified to facilitate testing
 const port = process.env.PORT || 3000;
-const start = async () => {
+const start = () => {
     try {
         // Connect to MongoDB before starting the server
-        await require("./db/connect")(process.env.MONGODB_URI);
-        app.listen(port, () =>
+        // Use mongoURL which switches based on NODE_ENV
+        require("./db/connect")(mongoURL);
+        return app.listen(port, () =>
             console.log(`Server is listening on port ${port}...`)
         );
     } catch (error) {
@@ -187,3 +217,5 @@ const start = async () => {
 };
 
 start();
+
+module.exports = { app };
